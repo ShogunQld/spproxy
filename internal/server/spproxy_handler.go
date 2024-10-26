@@ -12,6 +12,7 @@ import (
 )
 
 type ProxyCache struct {
+	CurrentDestURL string
 	CurrentPort    string
 	CurrentAppName string
 	ProxyMap       map[string]*httputil.ReverseProxy
@@ -24,13 +25,20 @@ func NewProxy(target *url.URL) *httputil.ReverseProxy {
 
 func NewProxyCache() *ProxyCache {
 	return &ProxyCache{
-		CurrentPort: "",
-		ProxyMap:    make(map[string]*httputil.ReverseProxy),
+		CurrentDestURL: "",
+		CurrentPort:    "",
+		CurrentAppName: "",
+		ProxyMap:       make(map[string]*httputil.ReverseProxy),
 	}
 }
 
-func ProxyRequestHandler(url *url.URL, resource configs.Resource, proxyCache *ProxyCache) func(http.ResponseWriter, *http.Request) {
+func ProxyRequestHandler(resource configs.Resource, proxyCache *ProxyCache) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		url, err := url.Parse(resource.Destination_URL)
+		if err != nil {
+			log.Fatalf("Failed to create ProxyRequestHandler for %s : %v", resource.Name, err)
+		}
+
 		originalURL := r.URL.String()
 
 		// Update the headers to allow for SSL redirection
@@ -52,30 +60,40 @@ func ProxyRequestHandler(url *url.URL, resource configs.Resource, proxyCache *Pr
 		}
 
 		// Update the sticky proxy port
-		if resource.Endpoint != "/" || proxyCache.CurrentPort == "" {
+		if (resource.Endpoint != "/" || proxyCache.CurrentPort == "") && resource.Port != "" {
+			proxyCache.CurrentDestURL = resource.Destination_URL
 			proxyCache.CurrentPort = resource.Port
 			proxyCache.CurrentAppName = resource.Name
+		}
 
-			createProxy(url, proxyCache)
+		createProxy(url, proxyCache, resource)
 
+		// If a sticky port is defined for the current resource, remove the endpoint url segment and
+		// redirect the client to the sticy port route via a HTTP 303 Redirect
+		if resource.Endpoint != "/" && resource.Port != "" {
 			redirectPath := originalURL[len(resource.Endpoint)-1:]
 			fmt.Printf("[%s] *** Browser redirect for %s to %s\n", timeString(), resource.Name, redirectPath)
 			http.Redirect(w, r, redirectPath, http.StatusSeeOther)
 			return
 		}
 
-		createProxy(url, proxyCache)
+		destUrl := proxyCache.CurrentDestURL
+		appName := proxyCache.CurrentAppName
+		if resource.Endpoint != "/" && resource.Port == "" {
+			destUrl = resource.Destination_URL
+			appName = resource.Name
+		}
 
 		// Send the request to the proxy for the sticky port
-		proxyCache.ProxyMap[proxyCache.CurrentPort].ServeHTTP(w, r)
-		fmt.Printf("[%s] %s Request %s %s ==> %s\n", timeString(), proxyCache.CurrentAppName, r.Method, originalURL, r.URL)
+		proxyCache.ProxyMap[destUrl].ServeHTTP(w, r)
+		fmt.Printf("[%s] %s Request %s %s ==> %s\n", timeString(), appName, r.Method, originalURL, r.URL)
 	}
 }
 
-func createProxy(url *url.URL, proxyCache *ProxyCache) {
-	if proxyCache.ProxyMap[proxyCache.CurrentPort] == nil {
-		fmt.Printf("[%s] *** Create new proxy for %s on %v ***\n", timeString(), proxyCache.CurrentAppName, url)
-		proxyCache.ProxyMap[proxyCache.CurrentPort] = NewProxy(url)
+func createProxy(url *url.URL, proxyCache *ProxyCache, resource configs.Resource) {
+	if proxyCache.ProxyMap[resource.Destination_URL] == nil {
+		fmt.Printf("[%s] *** Create new proxy for %s on %v ***\n", timeString(), resource.Name, url)
+		proxyCache.ProxyMap[resource.Destination_URL] = NewProxy(url)
 	}
 }
 

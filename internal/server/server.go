@@ -3,7 +3,6 @@ package server
 import (
 	"fmt"
 	"net/http"
-	"net/url"
 	"spproxy/internal/configs"
 )
 
@@ -15,8 +14,7 @@ func Run(config *configs.Configuration) error {
 	// Iterate through the configuration and register the routes into the proxy cache
 	proxyCache := NewProxyCache()
 	for _, resource := range config.Resources {
-		url, _ := url.Parse(resource.Destination_URL)
-		mux.HandleFunc(resource.Endpoint, ProxyRequestHandler(url, resource, proxyCache))
+		mux.HandleFunc(resource.Endpoint, ProxyRequestHandler(resource, proxyCache))
 	}
 
 	// Run the proxy server

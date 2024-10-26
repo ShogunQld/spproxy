@@ -65,9 +65,6 @@ func validateConfig(config *Configuration) error {
 		if strings.TrimSpace(resource.Destination_URL) == "" {
 			return fmt.Errorf("resources[%v].destination_url not defined", i)
 		}
-		if strings.TrimSpace(resource.Port) == "" {
-			return fmt.Errorf("resources[%v].port not defined", i)
-		}
 	}
 	return nil
 }
