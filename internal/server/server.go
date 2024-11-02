@@ -11,10 +11,16 @@ func Run(config *configs.Configuration) error {
 	// Create a new router
 	mux := http.NewServeMux()
 
-	// Iterate through the configuration and register the routes into the proxy cache
 	proxyCache := NewProxyCache()
-	for _, resource := range config.Resources {
-		mux.HandleFunc(resource.Endpoint, ProxyRequestHandler(resource, proxyCache))
+
+	mux.HandleFunc("/status", StatusRequestHandler(config, proxyCache))
+
+	// Iterate through the configuration and register the routes into the proxy cache
+	for _, route := range config.Routes {
+		mux.HandleFunc(route.Endpoint, ProxyRequestHandler(&route, proxyCache))
+		if route.Endpoint == "/" {
+			proxyCache.CurrentDestURL = route.Endpoint
+		}
 	}
 
 	// Run the proxy server

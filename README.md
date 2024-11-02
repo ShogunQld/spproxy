@@ -53,7 +53,7 @@ The following example configuration does the following:
     "host": "localhost",
     "listen_port": "8080"
   },
-  "resources": [
+  "routes": [
     {
       "name": "Sticky",
       "endpoint": "/",
@@ -93,3 +93,11 @@ The Sticky Port Proxy has the following limitations:
 Two reasons:
 - My work had multiple web apps that fit the third limitation above that required constantly stopping and starting apps to jump between them when running them locally, which was painful.
 - More importantly, it was a good excuse to learn go.
+
+## Air hot reloading
+
+This project contains an air configuration to allow hot reloading during development.
+
+To install Air, run `make install`
+
+To run spproxy using Air, run `air <config path>`

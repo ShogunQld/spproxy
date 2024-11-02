@@ -9,6 +9,11 @@ help:
 run:
 	go run cmd/main.go data/config.yaml
 
+## test: Run all the tests
+.PHONY: test
+test:
+	go test ./...
+
 ## build: Build proxy service executable for current architecture
 .PHONY: build
 build:
@@ -32,6 +37,11 @@ build-win:
 ## build-all: Build spproxy for all architectures
 .PHONY: build-all
 build-all: build-linux build-win build-mac
+
+## install: Install pre-requisite libraries: air
+.PHONY: install
+install:
+	go install github.com/air-verse/air@latest
 
 ## start-test-spproxy: Start Test Sticky Port Proxy
 .PHONY: start-test-spproxy
