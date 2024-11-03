@@ -1,12 +1,12 @@
 
 # spproxy - Sticky Port Proxy
 
-This is a dev tool that lets you run multiple web apps on the / url path and jump between them seamlessly without running into CORS issues.  It is a reverse proxy that will update the port that the / route targets each time you hit a different route with a port attached to it and redirects the browser back to the / route.
+This is a dev tool that lets you run multiple web apps on the `/` route and jump between them seamlessly without running into CORS issues.  It is a reverse proxy that will update the port that the `/` route targets each time you hit a different route with a port attached to it and redirects the browser back to the `/` route.
 
 It is NOT:
 - For production use
 - Useful for anything other than running things on localhost for development purposes
-- For use cases that require more than one session at a time (the / route changing targets will break the other session)
+- For use cases that require more than one session at a time (the `/` route changing targets will break the other session)
 
 ## How it works
 
@@ -40,12 +40,11 @@ Note: The final request to `localhost:8080/test` still hits `localhost:2222/test
 By default spproxy loads it configuration from `config.json` in the same directory as the executable.  However you can pass the path to your configuration file as the first command line parameter to spproxy.
 
 The following example configuration does the following:
-- Defines the server host name and port that ssproxy will run on.
-- Defines the following routes:
--- Sticky: The sticky port that will default to http://localhost.8081 when spproxy starts.
--- Server1: Redirect requests on the `/server1/` route to `localhost:8081` and update the Sticky route to target port `8081`.
--- Server2: Redirect requests on the `/server2/` route to `localhost:8082` and update the Sticky route to target port `8082`.
--- Server3: Redirect requests on the `/server3/` route to `localhost:8083` but don't update Sticky route.
+- The `server` section defines the server host name and port that ssproxy will run on.
+- Sticky: The sticky port that will default to `localhost.8081` when spproxy starts.
+- Server1: Redirect requests on the `/server1/` route to `localhost:8081` and update the Sticky route to target port `8081`.
+- Server2: Redirect requests on the `/server2/` route to `localhost:8082` and update the Sticky route to target port `8082`.
+- Server3: Redirect requests on the `/server3/` route to `localhost:8083` but don't update Sticky route.
 
 ```
 {
