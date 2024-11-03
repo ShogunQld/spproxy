@@ -14,7 +14,7 @@ import (
 
 type TestEndpoint struct {
 	mockServer *httptest.Server
-	resource   configs.Resource
+	route      configs.Route
 	url        *url.URL
 	handler    func(http.ResponseWriter, *http.Request)
 	response   string
@@ -29,7 +29,7 @@ func NewTestEndpoint(proxyCache *server.ProxyCache, name, endpoint string, stick
 	}
 	testEndpoint := &TestEndpoint{
 		mockServer: mockServer(200, response),
-		resource: configs.Resource{
+		route: configs.Route{
 			Name:            name,
 			Endpoint:        endpoint,
 			Port:            port,
@@ -38,7 +38,7 @@ func NewTestEndpoint(proxyCache *server.ProxyCache, name, endpoint string, stick
 		url:      url,
 		response: response,
 	}
-	testEndpoint.handler = server.ProxyRequestHandler(testEndpoint.resource, proxyCache)
+	testEndpoint.handler = server.ProxyRequestHandler(&testEndpoint.route, proxyCache)
 	fmt.Printf("Created Test Endpoint %s from %s to %s with sticky port: %s\n", name, endpoint, mock.URL, port)
 	return testEndpoint
 }
@@ -58,7 +58,7 @@ func TestProxyRequestHandler(t *testing.T) {
 
 	assert.Equal[int](t, w.Code, http.StatusSeeOther)
 	assert.Equal[string](t, w.Header().Get("Location"), "/hello")
-	assert.Equal[string](t, proxyCache.CurrentPort, endpoint1.resource.Port)
+	assert.Equal[string](t, proxyCache.CurrentPort(), endpoint1.route.Port)
 
 	t.Log("Hit root endpoint with redirect url - expect response from endpoint1 server")
 	req = httptest.NewRequest(http.MethodGet, w.Header().Get("Location"), nil)
@@ -66,7 +66,7 @@ func TestProxyRequestHandler(t *testing.T) {
 	endpointRoot.handler(w, req)
 
 	assert.Equal[int](t, w.Code, http.StatusOK)
-	assert.Equal[string](t, proxyCache.CurrentPort, endpoint1.resource.Port)
+	assert.Equal[string](t, proxyCache.CurrentPort(), endpoint1.route.Port)
 	assert.Equal[string](t, strings.TrimSpace(w.Body.String()), endpoint1.response)
 
 	t.Log("Hit endpoint /new - expect response from endpoint1 server")
@@ -75,7 +75,7 @@ func TestProxyRequestHandler(t *testing.T) {
 	endpointRoot.handler(w, req)
 
 	assert.Equal[int](t, w.Code, http.StatusOK)
-	assert.Equal[string](t, proxyCache.CurrentPort, endpoint1.resource.Port)
+	assert.Equal[string](t, proxyCache.CurrentPort(), endpoint1.route.Port)
 	assert.Equal[string](t, strings.TrimSpace(w.Body.String()), endpoint1.response)
 
 	t.Log("Hit non sicky endpoint3 - expect response from endpoint3 server")
@@ -84,7 +84,7 @@ func TestProxyRequestHandler(t *testing.T) {
 	endpoint3.handler(w, req)
 
 	assert.Equal[int](t, w.Code, http.StatusOK)
-	assert.Equal[string](t, proxyCache.CurrentPort, endpoint1.resource.Port)
+	assert.Equal[string](t, proxyCache.CurrentPort(), endpoint1.route.Port)
 	assert.Equal[string](t, strings.TrimSpace(w.Body.String()), endpoint3.response)
 
 	t.Log("Hit endpoint /new again - expect response from endpoint1 server")
@@ -93,7 +93,7 @@ func TestProxyRequestHandler(t *testing.T) {
 	endpointRoot.handler(w, req)
 
 	assert.Equal[int](t, w.Code, http.StatusOK)
-	assert.Equal[string](t, proxyCache.CurrentPort, endpoint1.resource.Port)
+	assert.Equal[string](t, proxyCache.CurrentPort(), endpoint1.route.Port)
 	assert.Equal[string](t, strings.TrimSpace(w.Body.String()), endpoint1.response)
 
 	t.Log("Hit endpoint two - expect redirection")
@@ -103,7 +103,7 @@ func TestProxyRequestHandler(t *testing.T) {
 
 	assert.Equal[int](t, w.Code, http.StatusSeeOther)
 	assert.Equal[string](t, w.Header().Get("Location"), "/boo")
-	assert.Equal[string](t, proxyCache.CurrentPort, endpoint2.resource.Port)
+	assert.Equal[string](t, proxyCache.CurrentPort(), endpoint2.route.Port)
 
 	t.Log("Hit root endpoint with redirect url - expect response from endpoint2 server")
 	req = httptest.NewRequest(http.MethodGet, w.Header().Get("Location"), nil)
@@ -111,7 +111,7 @@ func TestProxyRequestHandler(t *testing.T) {
 	endpointRoot.handler(w, req)
 
 	assert.Equal[int](t, w.Code, http.StatusOK)
-	assert.Equal[string](t, proxyCache.CurrentPort, endpoint2.resource.Port)
+	assert.Equal[string](t, proxyCache.CurrentPort(), endpoint2.route.Port)
 	assert.Equal[string](t, strings.TrimSpace(w.Body.String()), endpoint2.response)
 }
 

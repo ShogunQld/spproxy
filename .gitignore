@@ -18,6 +18,7 @@
 !LICENSE
 
 !Makefile
+!.air.toml
 
 # ...even if they are in subdirectories
 !*/

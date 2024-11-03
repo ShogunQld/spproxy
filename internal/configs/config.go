@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type Resource struct {
+type Route struct {
 	Name            string `json:"name"`
 	Endpoint        string `json:"endpoint"`
 	Port            string `json:"port"`
@@ -18,7 +18,7 @@ type Configuration struct {
 		Host        string `json:"host"`
 		Listen_port string `json:"listen_port"`
 	} `json:"server"`
-	Resources []Resource `json:"resources"`
+	Routes []Route `json:"routes"`
 }
 
 func NewConfiguration(configFilename string) (*Configuration, error) {
@@ -44,7 +44,7 @@ func NewConfiguration(configFilename string) (*Configuration, error) {
 		return nil, err
 	}
 
-	fmt.Printf("Config loaded: %v\n\n", config)
+	fmt.Printf("Config loaded Successfully\n\n")
 	return &config, nil
 }
 
@@ -55,15 +55,15 @@ func validateConfig(config *Configuration) error {
 	if strings.TrimSpace(config.Server.Listen_port) == "" {
 		return fmt.Errorf("server.listen_port not defined")
 	}
-	for i, resource := range config.Resources {
-		if strings.TrimSpace(resource.Name) == "" {
-			return fmt.Errorf("resources[%v].name not defined", i)
+	for i, route := range config.Routes {
+		if strings.TrimSpace(route.Name) == "" {
+			return fmt.Errorf("routes[%v].name not defined", i)
 		}
-		if strings.TrimSpace(resource.Endpoint) == "" {
-			return fmt.Errorf("resources[%v].endpoint not defined", i)
+		if strings.TrimSpace(route.Endpoint) == "" {
+			return fmt.Errorf("routes[%v].endpoint not defined", i)
 		}
-		if strings.TrimSpace(resource.Destination_URL) == "" {
-			return fmt.Errorf("resources[%v].destination_url not defined", i)
+		if strings.TrimSpace(route.Destination_URL) == "" {
+			return fmt.Errorf("routes[%v].destination_url not defined", i)
 		}
 	}
 	return nil
