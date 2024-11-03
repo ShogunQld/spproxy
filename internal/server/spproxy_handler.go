@@ -117,6 +117,8 @@ func createProxy(url *url.URL, proxyCache *ProxyCache, route *configs.Route) {
 	if proxyCache.ProxyMap[route.Destination_URL] == nil {
 		fmt.Printf("[%s] *** Create new proxy for %s on %v ***\n", timeString(), route.Name, url)
 		proxyCache.ProxyMap[route.Destination_URL] = NewProxy(url, route)
+	} else {
+		proxyCache.ProxyMap[route.Destination_URL].Route = route
 	}
 }
 

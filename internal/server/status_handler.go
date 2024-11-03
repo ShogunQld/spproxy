@@ -11,12 +11,38 @@ func StatusRequestHandler(config *configs.Configuration, proxyCache *ProxyCache)
 	return func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("**** Status Endpoint ****")
 		var sb strings.Builder
-		sb.WriteString("<html>\n<head>\n<title>Sticky Port Proxy Status</title>\n</head>\n</body>\n<center>\n")
+		sb.WriteString(`<html>
+		<head>
+		<title>Sticky Port Proxy Status</title>
+		<style>
+			table {
+				font-family: Arial, Helvetica, sans-serif;
+				border-collapse: collapse;
+			}
+
+			td, th {
+				border: 1px solid #ddd;
+				padding: 8px;
+			}
+
+			tr:nth-child(even){background-color: #f2f2f2;}
+
+			th {
+				padding-top: 12px;
+				padding-bottom: 12px;
+				text-align: left;
+				background-color: #555555;
+				color: white;
+			}
+		</style>
+		</head>
+		</body>
+		<center>`)
 		sb.WriteString("<h1>Sticky Port Proxy Status</h1>\n")
 		if proxyCache.ProxyMap[proxyCache.CurrentDestURL] == nil {
-			sb.WriteString("<b>No Sticky Port Set</b><p>")
+			sb.WriteString("<strong>No Sticky Port Set</strong>\n")
 		} else {
-			sb.WriteString(fmt.Sprintf("<b>Current Port:</b> %s for %s<br>Redirects %s to %s<p>\n",
+			sb.WriteString(fmt.Sprintf("Current Sticky Port <strong>%s</strong> for <strong>%s</strong> redirects <strong>%s</strong> to <strong>%s</strong><p>\n",
 				proxyCache.CurrentPort(), proxyCache.CurrentAppName(), proxyCache.CurrentEndpoint(), proxyCache.CurrentDestURL))
 		}
 		sb.WriteString("<h2>Routes</h2>\nClick on the URL link to update the current stick port to that route.<p>\n")

@@ -79,6 +79,10 @@ The following example configuration does the following:
 }
 ```
 
+## Status Page
+
+When running you can visit the `/status` route and see the current sticky port as well as all the routes.  This page also allows up to update the current sticky page.
+
 ## Limitations
 
 The Sticky Port Proxy has the following limitations:
